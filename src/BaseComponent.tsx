@@ -1,5 +1,5 @@
 import { PropsWithChildren, useContext, useLayoutEffect, useState } from "react";
-import { ConfigWriterContext, createConfigWriter } from "./config-writer";
+import { ConfigWriterContext, createConfigWriter } from "./config/config-writer";
 
 function Monospaced({ text }: { text: string }) {
     return (<pre style={{ textAlign: 'left', margin: 10, border: '1px solid red' }}><code>{text}</code></pre>);
@@ -10,8 +10,10 @@ export default function BaseComponent({ name, children, values }: PropsWithChild
     const configWriter = createConfigWriter(config);
     const [configString, setConfigString] = useState('');
     useLayoutEffect(() => {
+        console.log('base - component: useLayoutEffect');
         setConfigString(JSON.stringify(config, undefined, 2));
     });
+    console.log('Base Component');
     return (
         <div style={{ margin: 10, border: '1px solid red' }}>
             <Monospaced text={name} />
