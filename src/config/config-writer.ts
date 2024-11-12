@@ -38,126 +38,88 @@ import { createContext } from "react";
 // }
 
 interface WriterBaseCfg {
-    transactionId: Symbol;
+    // transactionId: Symbol;
 }
 
 class WriterBase {
 
-    protected _transactionId: Symbol;
+    // protected _transactionId: Symbol;
 
-    constructor(cfg: WriterBaseCfg) {
-        this._transactionId = cfg.transactionId;
-    }
+    // constructor(cfg: WriterBaseCfg) {
+        // this._transactionId = cfg.transactionId;
+    // }
 }
 
-
+interface Writer<T> {
+    set(value: T): void;
+}
 interface ArrayWriterCfg<T> extends WriterBaseCfg {
     target: T[];
 }
-class ArrayWriter<T> extends WriterBase {
-    public kind = 'array' as const;
-    private _target: T[];
-    private _index: number | undefined = undefined;
 
-    constructor(cfg: ArrayWriterCfg<T>) {
-        super(cfg);
+function createArrayWriter<T>({ target }: ArrayWriterCfg<T>) {
+    let index: number | undefined = undefined;
 
-        this._target = cfg.target;
-    }
-
-    public set(value: T): void {
-        if (this._index == undefined){
-            this._index = this._target.push(value) - 1;
-        } else {
-            this._target[this._index] = value;
+    return {
+        set(value: T): void {
+            if (index == undefined){
+                index = target.push(value) - 1;
+            } else {
+                target[index] = value;
+            }
         }
-    }
+    };
 }
 
-interface ObjectWriterCfg<T extends Record<string, unknown>> extends WriterBaseCfg {
+interface ObjectWriter<T> extends WriterBaseCfg {
+    set(value: T): void;
+    getArrayWriter<T2>(name: keyof T): Writer<T2>;
+    getObjectWriter<T2 extends Record<string, any>>(name: keyof T): ObjectWriter<T2>;
+}
+
+interface ObjectWriterCfg<T> extends WriterBaseCfg {
     target: T;
 }
-class ObjectWriter<T extends Record<string, unknown>> extends WriterBase {
-    public kind = 'object' as const;
-    private _target: T;
 
-    constructor(cfg: ObjectWriterCfg<T>) {
-        super(cfg);
+function createObjectWriter<T extends Record<string, any>>({ target }: ObjectWriterCfg<T>) {
+    
+    return {
+        set(values: T): void {
+            for (const [key, value] of Object.entries(values)){
+                target[(key as keyof T)] = value;
+            }
+        },
+        getArrayWriter<T2>(name: keyof T): Writer<T2> {
 
-        this._target = cfg.target;
-    }
+            target[name] = target[name] ?? [] as any; // any?
+    
+            const writer = createArrayWriter({
+                target: target[name],
+            });
+    
+            return writer;
+        },
+        getObjectWriter<T2 extends Record<string, any>>(name: keyof T): ObjectWriter<T2> {
 
-    public set(values: T): void {
-        for (const [key, value] of Object.entries(values)){
-            this._target[(key as keyof T)] = value as any; // any?
+            target[name] = {} as any; // any?
+    
+            const writer = createObjectWriter({
+                target: target[name],
+            });
+    
+            return writer;
         }
-    }
-
-    public getArrayWriter(name: keyof T): ArrayWriter<any> { // any?
-
-        this._target[name] = this._target[name] ?? [] as any; // any?
-
-        const writer = new ArrayWriter({
-            transactionId: this._transactionId,
-            target: this._target[name] as any, // any?
-        });
-
-        return writer;
-    }
-
-    public getObjectWriter(name: keyof T): ObjectWriter<any> { // any?
-
-        const target: Record<string, any> = {}; // any?
-        this._target[name] = target as any; // any?
-
-        const writer = new ObjectWriter({
-            transactionId: this._transactionId,
-            target,
-        });
-
-        return writer;
-    }
-
+    };
 }
 
-
-
-// type Values = Record<string, any>; // any?
-// type Collection = any[]; // any?
-
-// function createScalarConfigWriter(id: Symbol, target: Values): ScalarConfigWriter {
-//     const cache = {};
-//     return {
-//         id,
-//         set(key, value) {
-//             target[key] = value;
-//         },
-//         createChild: createChild.bind({ id, target, cache}),
-//         createCollectionChild: createCollectionChild.bind({ id, target, cache})
-//     };
-// };
-
-// function createCollectionConfigWriter(id: Symbol, target: Collection): CollectionConfigWriter {
-//     const cache = {};
-//     return {
-//         id,
-//         add(value) {
-//             target.push(value);
-//         },
-//         createChild: createChild.bind({ id, target, cache}),
-//         createCollectionChild: createCollectionChild.bind({ id, target, cache})
-//     };
-// };
-
 export function createConfigWriter<T extends Record<string, any>>(target: T) {
-    return new ObjectWriter({
-        transactionId: Symbol('update id:' + Math.round(Math.random() * 1000)),
+    return createObjectWriter({
         target
     });
 }
 
 
-export type ConfigWriter = ArrayWriter<any> | ObjectWriter<any>;
+export type ConfigWriter = Writer<any> | ObjectWriter<any>;
 
 const emptyConfig = undefined as any as ObjectWriter<Record<string, any>>;
 export const ConfigWriterContext = createContext<ObjectWriter<Record<string, any>>>(emptyConfig);
