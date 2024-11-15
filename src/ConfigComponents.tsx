@@ -6,7 +6,7 @@ export interface Props extends PropsWithConfigWriter {
 }
 
 export const CollectionItem = withConfigWriter({
-    name: 'collection-item',
+    name: 'collection-items',
     isCollection: true,
 }, ({ values, children, writeConfig }: PropsWithChildren<Props>) => {
     writeConfig(values);

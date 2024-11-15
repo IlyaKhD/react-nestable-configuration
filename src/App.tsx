@@ -6,7 +6,7 @@ import { CollectionItem, ObjectItem } from './ConfigComponents';
 
 function CustomObjectItem() {
   return (
-    <ObjectItem values={{ d: 99999 }} />
+    <ObjectItem values={{ objC: Math.round(Math.random()*1000) }} />
   );
 }
 
@@ -66,16 +66,23 @@ function App() {
       <div>state:{state}</div>
       <button onClick={invalidate}>invalidate</button>
       <Component1>
-        <ObjectItem values={{ a: state + 1 }}>
-          <CollectionItem values={{ i: state + 2 }} />
-          <CollectionItem values={{ k: state + 3 }} />
-          <ObjectItem values={{ b: state + 4 }}>
+        <ObjectItem values={{ obj: state + 1 }}>
+          <CollectionItem values={{ arr: state + 2 }} />
+          <CollectionItem values={{ arr: state + 3 }}>
+            <CustomObjectItem />
+          </CollectionItem>
+          <ObjectItem values={{ obj: state + 4 }}>
             <CustomObjectItem />
             <Component2>
-              <ObjectItem values={{ aaaaa: state + 5 }}>
-                <CollectionItem values={{ i: state + 6 }} />
-                <CollectionItem values={{ i: state + 7, k: state + 7 }}>
-                  {/* <ObjectItem values={{ p: state + 8 }}/> */}
+              <ObjectItem values={{ obj: state + 5 }}>
+                <CollectionItem values={{ arr: state + 6 }} />
+                <CollectionItem values={{ arr: state + 7 }}>
+                  <CollectionItem values={{ arr: state + 8 }} />
+                  <CustomObjectItem />
+                  <CollectionItem values={{ arr: state + 9 }} />
+                </CollectionItem>
+                <CollectionItem values={{ arr: state + 10, k: state + 10 }}>
+                  <ObjectItem values={{ obj: state + 11 }}/>
                 </CollectionItem>
                 <CustomObjectItem />
               </ObjectItem>

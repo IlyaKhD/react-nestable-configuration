@@ -22,12 +22,12 @@ export function withConfigWriter<P extends PropsWithChildren<PropsWithConfigWrit
 
         return children
             ? (
-                <Component {...(props as P)} writeConfig={(x) => configWriter.set(x)} >
+                <Component {...(props as P)} writeConfig={(x: any) => configWriter.set(x)} >
                     <ConfigWriterContext.Provider value={configWriter as any}>
                         {children}
                     </ConfigWriterContext.Provider>
                 </Component>
             )
-            : (<Component {...(props as P)} writeConfig={(x) => configWriter.set(x)} />);
+            : (<Component {...(props as P)} writeConfig={(x: any) => configWriter.set(x)} />);
     };
 }
