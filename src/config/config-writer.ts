@@ -8,21 +8,24 @@ interface ConfigWriter<T extends Obj> {
     getObjectWriter<T2 extends Obj>(name: keyof T): ConfigWriter<T2>;
 }
 
-function createWriter<T extends Obj>(
-    set: (value: T) => void,
+function createWriter<T extends Obj>({ get, set }: {
     get: <TKey extends keyof T>(key: TKey) => T[TKey] | undefined,
-): ConfigWriter<T> {
+    set: (value: T) => void,
+}): ConfigWriter<T> {
     return {
         set,
         getObjectWriter<T2 extends Record<string, any>>(name: keyof T): ConfigWriter<T2> {
-            const nestedTarget = {}
+            const nestedTarget: T2 = {} as any; // any?
             set({ [name]: nestedTarget } as any); // any?
 
-            const writer = createObjectWriter({
-                target: nestedTarget,
+            return createWriter({
+                get<TKey extends keyof T2>(key: TKey): T2[TKey] | undefined {
+                    return nestedTarget[key];
+                },
+                set(fields: T2) {
+                    mutate(nestedTarget, fields)
+                },
             });
-
-            return writer;
         },
         getArrayWriter<T2 extends Record<string, any>>(name: keyof T): ConfigWriter<T2> {
             let nestedTarget: any = get(name); // any?
@@ -33,30 +36,22 @@ function createWriter<T extends Obj>(
                 } as any); // any?
             }
 
-            const writer = createArrayWriter({
-                target: nestedTarget,
+            let index: number | undefined = undefined;
+
+            return createWriter<T2>({
+                get<TKey extends keyof T2>(key: TKey): T2[TKey] | undefined {
+                    return index == undefined
+                        ? undefined
+                        : nestedTarget[index][key];
+                },
+                set(values: T2) {
+                    index == undefined
+                        ? index = nestedTarget.push(values) - 1
+                        : nestedTarget[index] = { ...nestedTarget[index], ...values };
+                },
             });
-        
-            return writer;
         }
     }
-}
-
-interface ArrayWriterCfg<T> {
-    target: T[];
-}
-function createArrayWriter<T extends Record<string, any>>({ target }: ArrayWriterCfg<T>) {
-    let index: number | undefined = undefined;
-
-    const set = (values: T) => index == undefined
-        ? index = target.push(values) - 1
-        : target[index] = { ...target[index], ...values };
-
-    const get = <TKey extends keyof T>(key: TKey): T[TKey] | undefined => index == undefined
-    ? undefined
-    : target[index][key];
-
-    return createWriter(set, get);
 }
 
 function mutate(target: Obj, fields: Obj) {
@@ -65,23 +60,14 @@ function mutate(target: Obj, fields: Obj) {
     }
 }
 
-interface ObjectWriterCfg<T> {
-    target: T;
-}
-function createObjectWriter<T extends Obj>({ target }: ObjectWriterCfg<T>) {
-
-    const set = (fields: T) => mutate(target, fields);
-
-    const get = <TKey extends keyof T>(key: TKey): T[TKey] | undefined => {
-        return target[key];
-    }
-
-    return createWriter(set, get);
-}
-
 export function createConfigWriter<T extends Record<string, any>>(target: T) {
-    return createObjectWriter({
-        target
+    return createWriter({
+        get(key: string) {
+            return target[key];
+        },
+        set(fields: Obj) {
+            mutate(target, fields);
+        },
     });
 }
 
