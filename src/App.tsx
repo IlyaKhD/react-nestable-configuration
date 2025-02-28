@@ -66,23 +66,23 @@ function App() {
       <div>state:{state}</div>
       <button onClick={invalidate}>invalidate</button>
       <Component1>
-        <ObjectItem values={{ obj: state + 1 }}>
-          <CollectionItem values={{ arr: state + 2 }} />
-          <CollectionItem values={{ arr: state + 3 }}>
+        <ObjectItem values={{ obj_1: state + 1 }}>
+          <CollectionItem values={{ arr_12: state + 2 }} />
+          <CollectionItem values={{ arr_13: state + 3 }}>
             <CustomObjectItem />
           </CollectionItem>
-          <ObjectItem values={{ obj: state + 4 }}>
+          <ObjectItem values={{ obj_14: state + 4 }}>
             <CustomObjectItem />
             <Component2>
-              <ObjectItem values={{ obj: state + 5 }}>
-                <CollectionItem values={{ arr: state + 6 }} />
-                <CollectionItem values={{ arr: state + 7 }}>
-                  <CollectionItem values={{ arr: state + 8 }} />
+              <ObjectItem values={{ obj_2: state + 5 }}>
+                <CollectionItem values={{ arr_21: state + 6 }} />
+                <CollectionItem values={{ arr_22: state + 7 }}>
+                  <CollectionItem values={{ arr_221: state + 8 }} />
+                  <CollectionItem values={{ arr_222: state + 9 }} />
                   <CustomObjectItem />
-                  <CollectionItem values={{ arr: state + 9 }} />
                 </CollectionItem>
-                <CollectionItem values={{ arr: state + 10, k: state + 10 }}>
-                  <ObjectItem values={{ obj: state + 11 }}/>
+                <CollectionItem values={{ arr_23: state + 10 }}>
+                  <ObjectItem values={{ obj_231: state + 11 }}/>
                 </CollectionItem>
                 <CustomObjectItem />
               </ObjectItem>
